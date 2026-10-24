@@ -1,22 +1,26 @@
-import React, {useEffect, useContext, useMemo} from 'react';
-import {View, StyleSheet, Platform} from 'react-native';
+import React, {useContext} from 'react';
+import {View, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {useTranslation} from 'react-i18next';
 
-import WhiteButton from '../../components/Buttons/WhiteButton';
-import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
+import WhiteButtonV2 from '../../components/ButtonsV2/WhiteButtonV2';
+import WhiteClearButtonV2 from '../../components/ButtonsV2/WhiteClearButtonV2';
+import {useFixedBottomStyle} from '../../components/ButtonsV2/fixedBottomStyle';
 import Card from '../../components/Card';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {authenticate} from '../../utils/biometric';
 import {setBiometricEnabled} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {
-  StackNavigationOptions,
-  StackNavigationProp,
-} from '@react-navigation/stack';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
-import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+
+// Height fraction
+const BUTTONS_GAP_RATIO = 0.015;
 
 type RootStackParamList = {
   Biometric: undefined;
@@ -34,35 +38,20 @@ const Biometric: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+  const fixedBottomStyle = useFixedBottomStyle();
+
+  const {t} = useTranslation('onboarding');
 
   const faceIDSupported = useAppSelector(
     state => state.authentication.faceIDSupported,
   );
   const biometryType = faceIDSupported ? 'Face ID' : 'Touch ID';
 
-  const headerTitleMemo = useMemo(
-    () => (
-      <TranslateText
-        textKey={'enable_biometric'}
-        domain={'onboarding'}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-        interpolationObj={{biometricType: biometryType}}
-      />
-    ),
-    [SCREEN_HEIGHT, styles.headerTitle, biometryType],
-  );
-
-  useEffect(() => {
-    navigation.setOptions({
-      headerTitle: () => headerTitleMemo,
-    });
-  }, [navigation, headerTitleMemo]);
-
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.gradient}>
-      <CustomSafeAreaView styles={styles.safeArea} edges={['top', 'bottom']}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['top']}>
         <Card
           titleText={biometryType}
           descTextKey="biometric_description"
@@ -74,34 +63,40 @@ const Biometric: React.FC<Props> = props => {
               : require('../../assets/images/touch-id-blue.png')
           }
         />
-
-        <View style={styles.subContainer}>
-          <WhiteButton
-            value={`Enable ${biometryType}`}
-            small={false}
-            active={true}
-            onPress={async () => {
-              try {
-                await authenticate(`Enable ${biometryType}`);
-                dispatch(setBiometricEnabled(true));
-                navigation.navigate('Welcome');
-              } catch (error) {
-                console.log(error);
-                return;
-              }
-            }}
-          />
-          <WhiteClearButton
-            textKey="maybe"
-            textDomain="onboarding"
-            small={false}
-            onPress={() => {
-              dispatch(setBiometricEnabled(false));
-              navigation.navigate('Welcome');
-            }}
-          />
-        </View>
       </CustomSafeAreaView>
+
+      <View style={[fixedBottomStyle, styles.buttons]}>
+        <WhiteButtonV2
+          textKey="enable_biometric"
+          textDomain="onboarding"
+          textInterpolation={{biometricType: biometryType}}
+          onPress={async () => {
+            try {
+              await authenticate(`Enable ${biometryType}`);
+              dispatch(setBiometricEnabled(true));
+              navigation.navigate('Welcome');
+            } catch (error) {
+              console.log(error);
+              return;
+            }
+          }}
+        />
+        <WhiteClearButtonV2
+          textKey="maybe"
+          textDomain="onboarding"
+          onPress={() => {
+            dispatch(setBiometricEnabled(false));
+            navigation.navigate('Welcome');
+          }}
+        />
+      </View>
+
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleValue={t('enable_biometric', {biometricType: biometryType})}
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
@@ -115,61 +110,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
       width: '100%',
       alignItems: 'center',
-      justifyContent: 'space-between',
       marginTop: screenHeight * 0.14,
     },
-    subContainer: {
-      width: '100%',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: screenHeight * 0.02,
-      paddingHorizontal: 30,
-      paddingBottom: screenHeight * 0.02,
-    },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
-      fontStyle: 'normal',
-      fontWeight: 'bold',
+    buttons: {
+      gap: screenHeight * BUTTONS_GAP_RATIO,
     },
   });
-
-export const BiometricNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  return {
-    headerTitle: () => (
-      <TranslateText
-        textKey={'enable_biometric'}
-        domain={'onboarding'}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.026}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default Biometric;

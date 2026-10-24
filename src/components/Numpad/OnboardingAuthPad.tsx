@@ -6,7 +6,8 @@ import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import PadGrid from './PadGrid';
 import BuyButton from './BuyButton';
-import BlueButton from '../Buttons/BlueButton';
+import BlueButtonV2 from '../ButtonsV2/BlueButtonV2';
+import {GAP_RATIO} from '../ButtonsV2/fixedBottomStyle';
 import PasscodeInput from '../PasscodeInput';
 import OnboardingHeader from '../OnboardingHeader';
 
@@ -150,8 +151,8 @@ const OnboardingAuthPad: React.FC<Props> = props => {
             </View>
 
             <View style={styles.confirmButtonContainer}>
-              <BlueButton
-                disabled={pin.length !== 6 ? true : false}
+              <BlueButtonV2
+                disabled={pin.length !== 6}
                 textKey="confirm_pin"
                 textDomain="onboarding"
                 onPress={handleSetPin}
@@ -205,7 +206,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     confirmButtonContainer: {
       width: '100%',
-      paddingHorizontal: screenWidth * 0.06,
+      paddingHorizontal: screenWidth * GAP_RATIO,
     },
     buttonContainer: {
       width: screenWidth,

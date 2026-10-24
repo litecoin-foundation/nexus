@@ -19,12 +19,15 @@ const WHITE_BUTTON_BORDER = 'rgba(60, 60, 67, 0.12)';
 interface Props {
   textKey: string;
   textDomain: string;
+  textInterpolation?: {
+    [key: string]: any;
+  };
   onPress: () => void;
   disabled?: boolean;
 }
 
 const WhiteButtonV2: React.FC<Props> = props => {
-  const {textKey, textDomain, onPress, disabled} = props;
+  const {textKey, textDomain, textInterpolation, onPress, disabled} = props;
 
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = useMemo(() => getStyles(SCREEN_HEIGHT), [SCREEN_HEIGHT]);
@@ -62,6 +65,7 @@ const WhiteButtonV2: React.FC<Props> = props => {
         <TranslateText
           textKey={textKey}
           domain={textDomain}
+          interpolationObj={textInterpolation}
           maxSizeInPixels={SCREEN_HEIGHT * 0.022}
           textStyle={styles.text}
           numberOfLines={1}

@@ -1,20 +1,21 @@
-import React, {
-  useState,
-  useEffect,
-  useLayoutEffect,
-  useContext,
-  useMemo,
-} from 'react';
-import {View, Text, StyleSheet, Alert, Platform} from 'react-native';
+import React, {useState, useEffect, useContext} from 'react';
+import {View, Text, StyleSheet, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useTranslation} from 'react-i18next';
 
 import OnboardingHeader from '../../components/OnboardingHeader';
-import WhiteButton from '../../components/Buttons/WhiteButton';
-import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
-import TranslateText from '../../components/TranslateText';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
+import {BUTTON_HEIGHT_RATIO} from '../../components/ButtonsV2/BlueButtonV2';
+import WhiteButtonV2 from '../../components/ButtonsV2/WhiteButtonV2';
+import WhiteClearButtonV2 from '../../components/ButtonsV2/WhiteClearButtonV2';
+import {
+  GAP_RATIO,
+  useFixedBottomStyle,
+} from '../../components/ButtonsV2/fixedBottomStyle';
 
 import {getBIP39Word} from '../../utils/bip39';
 import {useAppSelector} from '../../store/hooks';
@@ -42,6 +43,9 @@ const Verify: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+  const fixedBottomStyle = useFixedBottomStyle();
 
   const seed = useAppSelector(state => state.onboarding.generatedSeed);
   const [multiplier, setMultiplier] = useState(1);
@@ -49,46 +53,7 @@ const Verify: React.FC<Props> = props => {
   const [wrongGuesses, setWrongGuesses] = useState(0);
   const MAX_WRONG_GUESSES = 2;
 
-  const [scrambled, setScrambledArray] = useState([]);
-
-  const headerTitleMemo = useMemo(
-    () => (
-      <TranslateText
-        textKey="verify_seed"
-        domain="onboarding"
-        textStyle={styles.headerTitle}
-      />
-    ),
-    [styles.headerTitle],
-  );
-
-  const headerLeftMemo = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    [navigation],
-  );
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTransparent: true,
-      headerTitleAlign: 'left',
-      headerTitleContainerStyle: {
-        left: 7,
-      },
-      headerTintColor: 'white',
-      headerTitle: () => headerTitleMemo,
-      headerLeft: () => headerLeftMemo,
-      headerLeftContainerStyle:
-        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-      headerRightContainerStyle:
-        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-    });
-  }, [navigation, headerTitleMemo, headerLeftMemo, SCREEN_WIDTH]);
+  const [scrambled, setScrambledArray] = useState<string[]>([]);
 
   const handlePress = async () => {
     if (multiplier === 8) {
@@ -160,52 +125,51 @@ const Verify: React.FC<Props> = props => {
         </OnboardingHeader>
 
         <View style={styles.buttonContainer}>
-          <WhiteClearButton
-            value={scrambled[4 * multiplier - 4]}
+          <WhiteClearButtonV2
+            textValue={scrambled[4 * multiplier - 4]}
             onPress={() => handleSelection(scrambled[4 * multiplier - 4], 0)}
-            selected={selected === 0 ? true : false}
+            selected={selected === 0}
           />
-          <WhiteClearButton
-            value={scrambled[4 * multiplier - 3]}
+          <WhiteClearButtonV2
+            textValue={scrambled[4 * multiplier - 3]}
             onPress={() => handleSelection(scrambled[4 * multiplier - 3], 1)}
-            selected={selected === 1 ? true : false}
+            selected={selected === 1}
           />
-          <WhiteClearButton
-            value={scrambled[4 * multiplier - 2]}
+          <WhiteClearButtonV2
+            textValue={scrambled[4 * multiplier - 2]}
             onPress={() => handleSelection(scrambled[4 * multiplier - 2], 2)}
-            selected={selected === 2 ? true : false}
+            selected={selected === 2}
           />
-          <WhiteClearButton
-            value={scrambled[4 * multiplier - 1]}
+          <WhiteClearButtonV2
+            textValue={scrambled[4 * multiplier - 1]}
             onPress={() => handleSelection(scrambled[4 * multiplier - 1], 3)}
-            selected={selected === 3 ? true : false}
-          />
-        </View>
-
-        <View style={styles.bottomContainer}>
-          <WhiteButton
-            disabled={selected === null ? true : false}
-            textKey="continue"
-            textDomain="onboarding"
-            onPress={() => handlePress()}
-            small={false}
-            active={true}
+            selected={selected === 3}
           />
         </View>
       </CustomSafeAreaView>
+
+      <View style={fixedBottomStyle}>
+        <WhiteButtonV2
+          disabled={selected === null}
+          textKey="continue"
+          textDomain="onboarding"
+          onPress={() => handlePress()}
+        />
+      </View>
+
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="verify_seed"
+        titleDomain="onboarding"
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
-    headerTitle: {
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: 'bold',
-      color: 'white',
-      fontSize: screenHeight * 0.026,
-    },
     gradient: {
       flex: 1,
     },
@@ -247,21 +211,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       opacity: 0.8,
       fontSize: screenHeight * 0.02,
     },
-    bottomContainer: {
-      width: '100%',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 15,
-      paddingHorizontal: 30,
-      paddingBottom: screenHeight * 0.02,
-    },
     buttonContainer: {
       flex: 1,
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: 30,
-      paddingBottom: 30,
+      paddingHorizontal: screenWidth * GAP_RATIO,
+      paddingBottom:
+        screenHeight * BUTTON_HEIGHT_RATIO + screenWidth * GAP_RATIO * 2,
     },
   });
 

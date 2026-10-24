@@ -15,7 +15,8 @@ import {
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import WhiteButton from '../components/Buttons/WhiteButton';
+import WhiteButtonV2 from '../components/ButtonsV2/WhiteButtonV2';
+import {GAP_RATIO} from '../components/ButtonsV2/fixedBottomStyle';
 import {
   checkBIP39Word,
   checkLitewalletBIP39Word,
@@ -325,12 +326,11 @@ const RecoveryField: React.FC<Props> = props => {
           ListFooterComponent={
             <View style={styles.footerContainer}>
               <View style={styles.buttonContainer}>
-                <WhiteButton
-                  value="Continue"
+                <WhiteButtonV2
+                  textKey="continue"
+                  textDomain="onboarding"
                   disabled={!isAllWordsFilled()}
                   onPress={handleContinue}
-                  small={false}
-                  active={true}
                 />
               </View>
               <View style={styles.emptyView} />
@@ -462,7 +462,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
     },
     buttonContainer: {
-      paddingHorizontal: 30,
+      paddingHorizontal: screenWidth * GAP_RATIO,
       paddingTop: screenHeight * 0.03,
       paddingBottom: screenHeight * 0.02,
     },

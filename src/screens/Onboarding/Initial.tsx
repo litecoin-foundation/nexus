@@ -4,8 +4,9 @@ import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {getLocales} from 'react-native-localize';
 
-import WhiteButton from '../../components/Buttons/WhiteButton';
-import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
+import WhiteButtonV2 from '../../components/ButtonsV2/WhiteButtonV2';
+import WhiteClearButtonV2 from '../../components/ButtonsV2/WhiteClearButtonV2';
+import {useFixedBottomStyle} from '../../components/ButtonsV2/fixedBottomStyle';
 import TranslateText from '../../components/TranslateText';
 import {useAppDispatch} from '../../store/hooks';
 import {
@@ -15,7 +16,6 @@ import {
 } from '../../reducers/settings';
 import {genSeed, getNeutrinoCache} from '../../reducers/onboarding';
 
-import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -35,6 +35,7 @@ const Initial = (props: Props) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const fixedBottomStyle = useFixedBottomStyle();
 
   useEffect(() => {
     dispatch(detectCurrencyCode());
@@ -62,29 +63,22 @@ const Initial = (props: Props) => {
           />
         </View>
       </View>
-      <View style={styles.bottomContainer}>
-        <CustomSafeAreaView
-          styles={{...styles.safeArea, ...styles.btnsContainer}}
-          edges={['bottom']}>
-          <WhiteButton
-            textKey="create_wallet"
-            textDomain="onboarding"
-            small={false}
-            onPress={() => {
-              dispatch(genSeed());
-              navigation.navigate('Pin');
-            }}
-            active={true}
-          />
-          <WhiteClearButton
-            textKey="already_wallet"
-            textDomain="onboarding"
-            small={false}
-            onPress={() => {
-              navigation.navigate('Recover');
-            }}
-          />
-        </CustomSafeAreaView>
+      <View style={[fixedBottomStyle, styles.btnsContainer]}>
+        <WhiteButtonV2
+          textKey="create_wallet"
+          textDomain="onboarding"
+          onPress={() => {
+            dispatch(genSeed());
+            navigation.navigate('Pin');
+          }}
+        />
+        <WhiteClearButtonV2
+          textKey="already_wallet"
+          textDomain="onboarding"
+          onPress={() => {
+            navigation.navigate('Recover');
+          }}
+        />
       </View>
     </LinearGradient>
   );
@@ -111,17 +105,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     textContainer: {
       alignItems: 'center',
     },
-    bottomContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.02,
-      width: '100%',
-      paddingHorizontal: 30,
-    },
     btnsContainer: {
-      width: '100%',
       gap: screenHeight * 0.015,
     },
-    safeArea: {},
   });
 
 Initial.navigationOptions = {

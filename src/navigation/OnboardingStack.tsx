@@ -7,11 +7,10 @@ import Pin from '../screens/Onboarding/Pin';
 import RecoverPin from '../screens/Onboarding/RecoverPin';
 import Generate from '../screens/Onboarding/Generate';
 import Verify from '../screens/Onboarding/Verify';
-import Recover, {RecoverNavigationOptions} from '../screens/Onboarding/Recover';
-import Biometric, {
-  BiometricNavigationOptions,
-} from '../screens/Onboarding/Biometric';
+import Recover from '../screens/Onboarding/Recover';
+import Biometric from '../screens/Onboarding/Biometric';
 import Welcome, {WelcomeNavigationOptions} from '../screens/Onboarding/Welcome';
+import {ScreenHeaderNavigationOptions} from '../components/ScreenHeader';
 import {OnboardingStackParamList} from './types';
 
 const Stack = createStackNavigator<OnboardingStackParamList>();
@@ -36,19 +35,35 @@ function OnboardingStack() {
         component={InitialWithSeed}
         options={InitialWithSeed.navigationOptions}
       />
-      <Stack.Screen name="Pin" component={Pin} />
-      <Stack.Screen name="RecoverPin" component={RecoverPin} />
-      <Stack.Screen name="Generate" component={Generate} />
-      <Stack.Screen name="Verify" component={Verify} />
+      <Stack.Screen
+        name="Pin"
+        component={Pin}
+        options={ScreenHeaderNavigationOptions}
+      />
+      <Stack.Screen
+        name="RecoverPin"
+        component={RecoverPin}
+        options={ScreenHeaderNavigationOptions}
+      />
+      <Stack.Screen
+        name="Generate"
+        component={Generate}
+        options={ScreenHeaderNavigationOptions}
+      />
+      <Stack.Screen
+        name="Verify"
+        component={Verify}
+        options={ScreenHeaderNavigationOptions}
+      />
       <Stack.Screen
         name="Recover"
         component={Recover}
-        options={({navigation}) => RecoverNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="Biometric"
         component={Biometric}
-        options={({navigation}) => BiometricNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="Welcome"

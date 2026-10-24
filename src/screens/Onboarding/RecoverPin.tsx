@@ -1,16 +1,12 @@
-import React, {
-  useState,
-  useLayoutEffect,
-  useEffect,
-  useContext,
-  useMemo,
-} from 'react';
-import {StyleSheet, View, Platform} from 'react-native';
+import React, {useState, useLayoutEffect, useEffect} from 'react';
+import {StyleSheet, View} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import Auth from '../../components/Auth';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import TranslateText from '../../components/TranslateText';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {addPincode} from '../../reducers/authentication';
 import {
   resetPincode,
@@ -20,8 +16,6 @@ import {
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getItem} from '../../utils/keychain';
 import {resetToLoading} from '../../navigation/NavigationService';
-
-import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   RecoverPin: undefined;
@@ -38,37 +32,11 @@ const RecoverPin: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
 
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const {biometricsAvailable, failedRecoverPinAttempts} = useAppSelector(
     state => state.authentication,
-  );
-
-  const headerTitleMemo = useMemo(
-    () => (
-      <TranslateText
-        textKey={'recover_pin'}
-        domain="onboarding"
-        textStyle={styles.headerTitle}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-      />
-    ),
-    [styles.headerTitle, SCREEN_HEIGHT],
-  );
-
-  const headerLeftMemo = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => {
-          navigation.goBack();
-        }}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    [navigation],
   );
 
   const [keychainPincodeState, setKeychainPincodeState] = useState<
@@ -84,18 +52,6 @@ const RecoverPin: React.FC<Props> = props => {
   }, []);
 
   const pin = useAppSelector(state => state.authpad.pin);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTitleAlign: 'center',
-      headerTitle: () => headerTitleMemo,
-      headerLeft: () => headerLeftMemo,
-      headerLeftContainerStyle:
-        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-      headerRightContainerStyle:
-        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-    });
-  }, [navigation, headerTitleMemo, headerLeftMemo, SCREEN_WIDTH]);
 
   const handleValidationSuccess = () => {
     dispatch(addPincode(pin));
@@ -137,27 +93,21 @@ const RecoverPin: React.FC<Props> = props => {
         handleValidationFailure={handleValidationFailure}
         keychainPincodeState={keychainPincodeState}
       />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="recover_pin"
+        titleDomain="onboarding"
+        fadeStyle={headerFadeStyle}
+      />
     </View>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    // left absolute margin is screenWidth * 0.15
-    // used for subtitles alinging
-    headerTitle: {
-      position: 'absolute',
-      top: screenHeight * 0.014 * -1,
-      left: screenWidth * 0.5 * -1 + screenWidth * 0.15,
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
-      fontStyle: 'normal',
-      fontWeight: 'bold',
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 export default RecoverPin;

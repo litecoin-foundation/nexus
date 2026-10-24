@@ -17,7 +17,8 @@ import {useTranslation} from 'react-i18next';
 import ProgressBar from '../../components/ProgressBar';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import TranslateText from '../../components/TranslateText';
-import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
+import WhiteClearButtonV2 from '../../components/ButtonsV2/WhiteClearButtonV2';
+import {useFixedBottomStyle} from '../../components/ButtonsV2/fixedBottomStyle';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {initWallet, startLnd} from '../../reducers/lightning';
 import {setSeed, skipPresync} from '../../reducers/onboarding';
@@ -42,6 +43,7 @@ const Welcome: React.FC<Props> = props => {
 
   const {width, height} = useContext(ScreenSizeContext);
   const styles = getStyles(width, height);
+  const fixedBottomStyle = useFixedBottomStyle();
 
   const dispatch = useAppDispatch();
 
@@ -168,32 +170,26 @@ const Welcome: React.FC<Props> = props => {
           <View style={styles.contentContainer}>
             {task !== 'complete' ? cacheProgress : null}
           </View>
-
-          {showSkipButton && (
-            <Animated.View
-              style={[styles.buttonContainer, animatedButtonStyle]}>
-              <WhiteClearButton
-                textKey="skip_presync"
-                textDomain="onboarding"
-                small={false}
-                onPress={() => {
-                  Alert.alert(
-                    t('are_you_sure'),
-                    t('skip_presync_description'),
-                    [
-                      {
-                        text: t('cancel'),
-                        onPress: () => console.log('Cancel Pressed'),
-                        style: 'cancel',
-                      },
-                      {text: t('ok'), onPress: () => handleSkipPresync()},
-                    ],
-                  );
-                }}
-              />
-            </Animated.View>
-          )}
         </CustomSafeAreaView>
+
+        {showSkipButton && (
+          <Animated.View style={[fixedBottomStyle, animatedButtonStyle]}>
+            <WhiteClearButtonV2
+              textKey="skip_presync"
+              textDomain="onboarding"
+              onPress={() => {
+                Alert.alert(t('are_you_sure'), t('skip_presync_description'), [
+                  {
+                    text: t('cancel'),
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                  },
+                  {text: t('ok'), onPress: () => handleSkipPresync()},
+                ]);
+              }}
+            />
+          </Animated.View>
+        )}
       </LinearGradient>
 
       <LoadingIndicator visible={loading} />
@@ -218,11 +214,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       justifyContent: 'center',
       alignItems: 'center',
-    },
-    buttonContainer: {
-      width: '100%',
-      paddingHorizontal: 30,
-      paddingBottom: screenHeight * 0.02,
     },
     neutrinoCacheContainer: {
       alignSelf: 'center',

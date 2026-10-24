@@ -5,8 +5,9 @@ import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {getLocales} from 'react-native-localize';
 
-import WhiteButton from '../../components/Buttons/WhiteButton';
-import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
+import WhiteButtonV2 from '../../components/ButtonsV2/WhiteButtonV2';
+import WhiteClearButtonV2 from '../../components/ButtonsV2/WhiteClearButtonV2';
+import {useFixedBottomStyle} from '../../components/ButtonsV2/fixedBottomStyle';
 import {useAppDispatch} from '../../store/hooks';
 import {
   detectCurrencyCode,
@@ -49,6 +50,7 @@ const InitialWithSeed = (props: Props) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const fixedBottomStyle = useFixedBottomStyle();
 
   useEffect(() => {
     dispatch(detectCurrencyCode());
@@ -105,36 +107,28 @@ const InitialWithSeed = (props: Props) => {
         </CustomSafeAreaView>
       </View>
 
-      <View style={styles.bottomContainer}>
-        <CustomSafeAreaView
-          styles={{...styles.safeArea, ...styles.btnsContainer}}
-          edges={['bottom']}>
-          <WhiteButton
-            textKey="create_new_wallet"
-            textDomain="onboarding"
-            small={false}
-            onPress={() => {
-              createNewSeed();
-            }}
-            active={true}
-          />
-          <WhiteClearButton
-            textKey="proceed_with_existing"
-            textDomain="onboarding"
-            small={false}
-            onPress={() => {
-              loginWithExistingSeed(route.params.existingSeed);
-            }}
-          />
-          <WhiteClearButton
-            textKey="already_wallet"
-            textDomain="onboarding"
-            small={false}
-            onPress={() => {
-              navigation.navigate('Recover');
-            }}
-          />
-        </CustomSafeAreaView>
+      <View style={[fixedBottomStyle, styles.btnsContainer]}>
+        <WhiteButtonV2
+          textKey="create_new_wallet"
+          textDomain="onboarding"
+          onPress={() => {
+            createNewSeed();
+          }}
+        />
+        <WhiteClearButtonV2
+          textKey="proceed_with_existing"
+          textDomain="onboarding"
+          onPress={() => {
+            loginWithExistingSeed(route.params.existingSeed);
+          }}
+        />
+        <WhiteClearButtonV2
+          textKey="already_wallet"
+          textDomain="onboarding"
+          onPress={() => {
+            navigation.navigate('Recover');
+          }}
+        />
       </View>
     </LinearGradient>
   );
@@ -173,14 +167,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       textAlign: 'center',
       paddingTop: screenHeight * 0.02,
     },
-    bottomContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.02,
-      width: '100%',
-      paddingHorizontal: 30,
-    },
     btnsContainer: {
-      width: '100%',
       gap: screenHeight * 0.015,
     },
     safeArea: {},

@@ -1,25 +1,19 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useContext,
-  useMemo,
-} from 'react';
-import {StyleSheet, View, Platform} from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {StyleSheet, View} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useFocusEffect} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 
 import OnboardingAuthPad from '../../components/Numpad/OnboardingAuthPad';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import TranslateText from '../../components/TranslateText';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {addPincode} from '../../reducers/authentication';
 import {clearValues} from '../../reducers/authpad';
 import {resetPincode} from '../../reducers/authentication';
 import {resetSeedAction} from '../../reducers/onboarding';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-
-import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   Pin: undefined;
@@ -37,9 +31,8 @@ const Pin: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
   const {t} = useTranslation('onboarding');
 
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const [newPasscode, setNewPasscode] = useState('');
   const [passcodeInitialSet, setPasscodeInitialSet] = useState(false);
@@ -68,46 +61,6 @@ const Pin: React.FC<Props> = props => {
 
     return unsubscribe;
   }, [navigation, dispatch, beingRecovered]);
-
-  const headerTitleMemo = useMemo(
-    () => (
-      <TranslateText
-        textKey={passcodeInitialSet ? 'verify_pin' : 'create_pin'}
-        domain="onboarding"
-        textStyle={styles.headerTitle}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-      />
-    ),
-    [passcodeInitialSet, styles.headerTitle, SCREEN_HEIGHT],
-  );
-
-  const headerLeftMemo = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => {
-          navigation.goBack();
-        }}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    [navigation],
-  );
-
-  useEffect(() => {
-    navigation.setOptions({
-      headerTitleAlign: 'left',
-      headerTitleContainerStyle: {
-        left: 7,
-      },
-      headerTitle: () => headerTitleMemo,
-      headerLeft: () => headerLeftMemo,
-      headerLeftContainerStyle:
-        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-      headerRightContainerStyle:
-        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-    });
-  }, [navigation, headerTitleMemo, headerLeftMemo, SCREEN_WIDTH]);
 
   const handleCompletion = () => {
     setNewPasscode(pin);
@@ -151,22 +104,21 @@ const Pin: React.FC<Props> = props => {
         newPasscode={newPasscode}
         passcodeInitialSet={passcodeInitialSet}
       />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey={passcodeInitialSet ? 'verify_pin' : 'create_pin'}
+        titleDomain="onboarding"
+        fadeStyle={headerFadeStyle}
+      />
     </View>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    headerTitle: {
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: 'bold',
-      color: 'white',
-      fontSize: screenHeight * 0.026,
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 export default Pin;

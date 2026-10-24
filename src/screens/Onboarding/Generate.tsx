@@ -1,21 +1,19 @@
-import React, {
-  useState,
-  useRef,
-  useLayoutEffect,
-  useContext,
-  useMemo,
-} from 'react';
-import {View, Text, StyleSheet, Image, Platform} from 'react-native';
+import React, {useState, useRef, useContext} from 'react';
+import {View, Text, StyleSheet, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {createSelector} from '@reduxjs/toolkit';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useTranslation} from 'react-i18next';
 
 import SeedView from '../../components/SeedView';
-import WhiteButton from '../../components/Buttons/WhiteButton';
+import WhiteButtonV2 from '../../components/ButtonsV2/WhiteButtonV2';
+import {useFixedBottomStyle} from '../../components/ButtonsV2/fixedBottomStyle';
 import Dots from '../../components/Dots';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import OnboardingHeader from '../../components/OnboardingHeader';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import TranslateText from '../../components/TranslateText';
 import CustomCarousel, {
   CustomCarouselRef,
@@ -23,7 +21,6 @@ import CustomCarousel, {
 import {useAppSelector} from '../../store/hooks';
 import chunk from '../../utils/chunk';
 
-import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -41,6 +38,9 @@ const Generate: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+  const fixedBottomStyle = useFixedBottomStyle();
 
   const {t} = useTranslation('onboarding');
 
@@ -52,46 +52,6 @@ const Generate: React.FC<Props> = props => {
   );
   const seed = useAppSelector(state => seedSelector(state));
   const [activePage, setActivePage] = useState(0);
-
-  const headerLeftButton = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    [navigation],
-  );
-
-  const headerTitle = useMemo(
-    () => (
-      <TranslateText
-        textKey="seed_phrase"
-        domain="onboarding"
-        textStyle={styles.headerTitle}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-      />
-    ),
-    [styles, SCREEN_HEIGHT],
-  );
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTransparent: true,
-      headerTitleAlign: 'left',
-      headerTitleContainerStyle: {
-        left: 7,
-      },
-      headerTintColor: 'white',
-      headerLeft: () => headerLeftButton,
-      headerTitle: () => headerTitle,
-      headerLeftContainerStyle:
-        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-      headerRightContainerStyle:
-        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-    });
-  }, [navigation, headerLeftButton, headerTitle, SCREEN_WIDTH]);
 
   const list = (
     <CustomCarousel
@@ -137,38 +97,40 @@ const Generate: React.FC<Props> = props => {
         <Dots dotsLength={seed.length} activeDotIndex={activePage} />
       </View>
 
-      <View style={styles.bottomContainer}>
-        <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
-          <View style={styles.bottomTextContainer}>
-            <View style={styles.imageContainer}>
-              <Image
-                style={styles.image}
-                source={require('../../assets/images/attention.png')}
-              />
-            </View>
-
-            <TranslateText
-              textKey="seed_warning"
-              domain="onboarding"
-              textStyle={styles.warningText}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.013}
-              numberOfLines={2}
+      <View style={[fixedBottomStyle, styles.bottomContainer]}>
+        <View style={styles.bottomTextContainer}>
+          <View style={styles.imageContainer}>
+            <Image
+              style={styles.image}
+              source={require('../../assets/images/attention.png')}
             />
           </View>
 
-          <WhiteButton
-            textKey={
-              activePage === seed.length - 1
-                ? 'confirm_written'
-                : 'scroll_right'
-            }
-            textDomain="onboarding"
-            onPress={() => handlePress()}
-            small={false}
-            active={true}
+          <TranslateText
+            textKey="seed_warning"
+            domain="onboarding"
+            textStyle={styles.warningText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.013}
+            numberOfLines={2}
           />
-        </CustomSafeAreaView>
+        </View>
+
+        <WhiteButtonV2
+          textKey={
+            activePage === seed.length - 1 ? 'confirm_written' : 'scroll_right'
+          }
+          textDomain="onboarding"
+          onPress={() => handlePress()}
+        />
       </View>
+
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="seed_phrase"
+        titleDomain="onboarding"
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
@@ -176,9 +138,6 @@ const Generate: React.FC<Props> = props => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     gradient: {
-      flex: 1,
-    },
-    safeArea: {
       flex: 1,
     },
     seedContainer: {
@@ -195,14 +154,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
     },
     bottomContainer: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      paddingHorizontal: 30,
-      paddingBottom: screenHeight * 0.02,
       zIndex: 10,
-      backgroundColor: 'transparent',
     },
     bottomTextContainer: {
       width: '100%',
@@ -226,13 +178,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     image: {
       width: screenWidth * 0.08,
       objectFit: 'contain',
-    },
-    headerTitle: {
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: 'bold',
-      color: 'white',
-      fontSize: screenHeight * 0.026,
     },
     dotContainer: {
       position: 'absolute',

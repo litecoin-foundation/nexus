@@ -3,6 +3,7 @@ import {View, StyleSheet} from 'react-native';
 import CustomSafeAreaView from './CustomSafeAreaView';
 
 import TranslateText from './TranslateText';
+import {useScreenHeaderLayout} from './ScreenHeader';
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
@@ -20,9 +21,9 @@ const OnboardingHeader: React.FC<Props> = props => {
   const {description, children, textKey, textDomain, textInterpolation, thin} =
     props;
 
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, thin || false);
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const {titleLeft} = useScreenHeaderLayout();
+  const styles = getStyles(SCREEN_HEIGHT, titleLeft, thin || false);
 
   return (
     <CustomSafeAreaView edges={['top']}>
@@ -51,7 +52,7 @@ const OnboardingHeader: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number, thin: boolean) =>
+const getStyles = (screenHeight: number, titleLeft: number, thin: boolean) =>
   StyleSheet.create({
     headerContainer: {
       paddingTop: screenHeight * 0.055,
@@ -62,12 +63,7 @@ const getStyles = (screenWidth: number, screenHeight: number, thin: boolean) =>
       fontStyle: 'normal',
       fontWeight: thin ? '500' : '600',
       fontSize: screenHeight * 0.017,
-      // screenWidth * 0.04 = header button left padding
-      // screenHeight * 0.035 = header back button width
-      // 7 = header title padding
-      // screenHeight * 0.005 = approx difference between desc and title
-      paddingHorizontal:
-        screenWidth * 0.04 + screenHeight * 0.035 + 7 + screenHeight * 0.005,
+      paddingHorizontal: titleLeft,
     },
   });
 
