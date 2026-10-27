@@ -29,6 +29,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 type RootStackParamList = {
   Verify: undefined;
   Biometric: undefined;
+  Welcome: undefined;
 };
 
 interface Props {
@@ -48,6 +49,7 @@ const Verify: React.FC<Props> = props => {
   const fixedBottomStyle = useFixedBottomStyle();
 
   const seed = useAppSelector(state => state.onboarding.generatedSeed);
+  const {biometricsAvailable} = useAppSelector(state => state.authentication);
   const [multiplier, setMultiplier] = useState(1);
   const [selected, setSelectedIndex] = useState<number | null>(null);
   const [wrongGuesses, setWrongGuesses] = useState(0);
@@ -57,7 +59,11 @@ const Verify: React.FC<Props> = props => {
 
   const handlePress = async () => {
     if (multiplier === 8) {
-      navigation.navigate('Biometric');
+      if (biometricsAvailable) {
+        navigation.navigate('Biometric');
+      } else {
+        navigation.navigate('Welcome');
+      }
       dispatch(setSeedVerified(true));
       return;
     }
