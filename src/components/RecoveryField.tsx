@@ -308,7 +308,11 @@ const RecoveryField: React.FC<Props> = props => {
     <KeyboardAvoidingView
       enabled={false}
       behavior={Platform.OS === 'android' ? 'height' : 'padding'}>
-      <View style={styles.container}>
+      {/* NOTE: collapsable={false} keeps this a real native view. Otherwise
+          it's flattened and the suggestion pills mount straight into the
+          parent screen's LinearGradient, the pills mount out of
+          order and the wrong view gets detached, which crashes on recycle */}
+      <View style={styles.container} collapsable={false}>
         <TranslateText
           textValue={headerText}
           textStyle={[
@@ -478,8 +482,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: 10,
     },
     suggestionButton: {
-      flex: 1,
-      maxWidth: '33%',
+      width: Math.floor((screenWidth - 10 * 4) / 3),
       height: 40,
       backgroundColor: 'white',
       borderRadius: 20,
