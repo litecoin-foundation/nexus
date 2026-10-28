@@ -159,6 +159,12 @@ const SendConfirmation: React.FC<Props> = props => {
 
   // estimate fee
   useEffect(() => {
+    // NOTE: after a send-all broadcasts, the balance drops while this screen is still
+    // mounted under SuccessSend, which would make sendAmount negative
+    if (sendAmount <= 0) {
+      return;
+    }
+
     const calculateFee = async () => {
       try {
         const response = await estimateFee({
