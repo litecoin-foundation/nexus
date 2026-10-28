@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Pressable, StyleSheet} from 'react-native';
+import {Pressable, StyleSheet, ViewStyle} from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -16,6 +16,22 @@ const THUMB_INSET = (TRACK_HEIGHT - THUMB_SIZE) / 2;
 const THUMB_TRAVEL = TRACK_WIDTH - THUMB_SIZE - THUMB_INSET * 2;
 
 const SPRING = {damping: 18, stiffness: 260, mass: 0.6};
+
+export const SWITCH_ACCENT = 'rgba(44,114,255,0.62)';
+export const SWITCH_KNOB_FINISH: ViewStyle = {
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: 'rgba(255,255,255,0.5)',
+  boxShadow: [
+    {offsetX: 0, offsetY: 1, blurRadius: 3, color: 'rgba(0,0,0,0.3)'},
+    {
+      offsetX: 0,
+      offsetY: 1,
+      blurRadius: 0,
+      color: 'rgba(255,255,255,0.45)',
+      inset: true,
+    },
+  ],
+};
 
 interface Props {
   onPress?: (bool: boolean) => void;
@@ -102,25 +118,14 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderRadius: TRACK_HEIGHT / 2,
     borderCurve: 'continuous',
-    backgroundColor: 'rgba(44,114,255,0.62)',
+    backgroundColor: SWITCH_ACCENT,
   },
   thumb: {
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: THUMB_SIZE / 2,
     borderCurve: 'continuous',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.5)',
-    boxShadow: [
-      {offsetX: 0, offsetY: 1, blurRadius: 3, color: 'rgba(0,0,0,0.3)'},
-      {
-        offsetX: 0,
-        offsetY: 1,
-        blurRadius: 0,
-        color: 'rgba(255,255,255,0.45)',
-        inset: true,
-      },
-    ],
+    ...SWITCH_KNOB_FINISH,
   },
   pressed: {
     opacity: 0.85,

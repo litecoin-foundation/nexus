@@ -19,7 +19,6 @@ import {
 import {FlashList} from '@shopify/flash-list';
 import {RouteProp} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
-import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -35,6 +34,9 @@ import SettingCell from '../../components/Cells/SettingCell';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import SupportCell from '../../components/Cells/SupportCell';
 import SectionHeader from '../../components/SectionHeader';
+import SegmentedPills, {
+  Segment,
+} from '../../components/ButtonsV2/SegmentedPills';
 import {setBiometricEnabled} from '../../reducers/authentication';
 import {canUseTorOnThisDevice} from '../../utils/tor';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -79,6 +81,12 @@ interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'Settings'>;
   route: RouteProp<RootStackParamList, 'Settings'>;
 }
+
+const DENOMINATIONS: Segment[] = [
+  {key: 'LTC', title: 'LTC'},
+  {key: 'Lites', title: 'Lites'},
+  {key: 'Photons', title: 'Photons'},
+];
 
 const Settings: React.FC<Props> = props => {
   const {navigation} = props;
@@ -434,18 +442,14 @@ const Settings: React.FC<Props> = props => {
                 textStyle={styles.switchTitleText}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.017}
               />
-              <SegmentedControl
-                values={['LTC', 'Lites', 'Photons']}
-                selectedIndex={subunit}
-                tintColor="#2C72FF"
-                fontStyle={styles.toggleText}
-                activeFontStyle={styles.activeToggleText}
-                backgroundColor="#fff"
-                onChange={event =>
-                  dispatch(
-                    updateSubunit(event.nativeEvent.selectedSegmentIndex),
-                  )
-                }
+              <SegmentedPills
+                segments={DENOMINATIONS}
+                activeIndex={subunit}
+                onSelect={index => dispatch(updateSubunit(index))}
+                width={SCREEN_WIDTH - 50}
+                tone="switch"
+                // NOTE: a subunit change re-renders the wallet underneath
+                selectOnSettle
               />
             </View>
           );
@@ -458,6 +462,7 @@ const Settings: React.FC<Props> = props => {
       faceIDSupported,
       subunit,
       t,
+      SCREEN_WIDTH,
       SCREEN_HEIGHT,
       styles,
       handleBiometricSwitch,
@@ -568,16 +573,6 @@ const getStyles = (
       fontWeight: '700',
       color: '#484859',
       fontSize: 14,
-    },
-    toggleText: {
-      color: '#484859',
-      fontSize: screenHeight * 0.017,
-      fontWeight: 'bold',
-    },
-    activeToggleText: {
-      color: '#fff',
-      fontSize: screenHeight * 0.017,
-      fontWeight: 'bold',
     },
   });
 
