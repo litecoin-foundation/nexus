@@ -1,7 +1,6 @@
 import {useContext, useMemo} from 'react';
 import {
   BlendMode,
-  ClipOp,
   PaintStyle,
   Skia,
   StrokeCap,
@@ -30,7 +29,6 @@ import {buildParagraph, useSatoshiFontMgr} from '../GlassBalanceGraphics';
 import {
   makeCachedSkiaIcons,
   MUTED_TEXT,
-  ROW_BORDER,
   SHEET_BACKGROUND,
 } from '../GlassTxRows';
 import type {SkiaListCallbacks} from '../SkiaList';
@@ -44,9 +42,8 @@ const AMOUNT_TEXT = '#212124';
 const TINT = GLASS_BUTTON_TINT;
 const DISCOUNT_GREEN = '#1EBC73';
 const STATUS_ORANGE = '#FF9500';
-// logos come encoded on white, the tile must match for them to blend
-const TILE_FILL = '#ffffff';
 const SKELETON_FILL = '#EFF1F3';
+const CARD_EDGE = 'rgba(214, 216, 218, 0.5)';
 
 // the sale sticker lifted from the old BrandCard: a hand-drawn blob, stretched
 // to the badge box (the svg used preserveAspectRatio="none") and tilted -8deg
@@ -72,9 +69,7 @@ export interface ShopRowContext {
 interface ShopRowPaints {
   rowBackground: SkPaint;
   headerBackground: SkPaint;
-  border: SkPaint;
-  tile: SkPaint;
-  tileBorder: SkPaint;
+  cardBorder: SkPaint;
   tint: SkPaint;
   skeleton: SkPaint;
   discount: SkPaint;
@@ -120,9 +115,7 @@ const makePaints = (screenHeight: number): ShopRowPaints => {
   return {
     rowBackground: makePaint('#ffffff'),
     headerBackground: makePaint(SHEET_BACKGROUND),
-    border: makePaint(ROW_BORDER),
-    tile: makePaint(TILE_FILL),
-    tileBorder: makeStroke('rgba(214, 216, 218, 0.5)', 1),
+    cardBorder: makeStroke(CARD_EDGE, 1),
     tint: makePaint(TINT),
     skeleton: makePaint(SKELETON_FILL),
     discount: makePaint(DISCOUNT_GREEN),
@@ -160,24 +153,27 @@ const buildItem = (
 
   switch (model.kind) {
     case 'label': {
+      const line = {maxLines: 1, lineHeight: layout.labelLineHeight};
       const built: ShopRowParagraphs = {
         title: buildParagraph(
           fontMgr,
           model.title,
-          secondary,
+          layout.labelFontSize,
           700,
           MUTED_TEXT,
           screenWidth,
+          line,
         ),
       };
       if (model.accessory) {
         built.accessory = buildParagraph(
           fontMgr,
           model.accessory,
-          secondary,
+          layout.labelFontSize,
           700,
           TINT,
           screenWidth,
+          line,
         );
       }
       return built;
@@ -315,7 +311,29 @@ const disposeItem = (built: ShopRowParagraphs) => {
   built.message?.dispose?.();
 };
 
-const drawLogoTile = (
+// each cell is its own rounded card on the sheet, inset from the screen
+// edges; the row's height carries the gap that separates it from the next
+const drawCard = (canvas: SkCanvas, context: ShopRowContext, top: number) => {
+  'worklet';
+  const {layout, paints, screenWidth} = context;
+  const card = Skia.RRectXY(
+    Skia.XYWHRect(
+      layout.cardInset,
+      top,
+      screenWidth - layout.cardInset * 2,
+      layout.cellHeight,
+    ),
+    layout.cardRadius,
+    layout.cardRadius,
+  );
+  canvas.drawRRect(card, paints.rowBackground);
+  canvas.drawRRect(card, paints.cardBorder);
+  return card;
+};
+
+// the bare logo, fitted to the whole logo box; logos come encoded on white,
+// so they blend straight into the card
+const drawLogo = (
   canvas: SkCanvas,
   model: ShopRowModel,
   built: ShopRowParagraphs,
@@ -325,40 +343,37 @@ const drawLogoTile = (
 ) => {
   'worklet';
   const {logos, layout, paints} = context;
-  const tileTop = cy - layout.tileHeight / 2;
-  const tileRect = Skia.RRectXY(
-    Skia.XYWHRect(x, tileTop, layout.tileWidth, layout.tileHeight),
-    layout.tileRadius,
-    layout.tileRadius,
-  );
-  canvas.drawRRect(tileRect, paints.tile);
-  canvas.drawRRect(tileRect, paints.tileBorder);
-
   const logo = model.logoKey ? (logos[model.logoKey] ?? null) : null;
   if (logo) {
-    const boxW = layout.tileWidth * 0.76;
-    const boxH = layout.tileHeight * 0.76;
-    const scale = Math.min(boxW / logo.width(), boxH / logo.height());
-    const drawWidth = logo.width() * scale;
-    const drawHeight = logo.height() * scale;
-    canvas.save();
-    canvas.clipRRect(tileRect, ClipOp.Intersect, true);
-    canvas.drawImageRect(
-      logo,
-      Skia.XYWHRect(0, 0, logo.width(), logo.height()),
-      Skia.XYWHRect(
-        x + (layout.tileWidth - drawWidth) / 2,
-        cy - drawHeight / 2,
-        drawWidth,
-        drawHeight,
-      ),
-      paints.image,
+    const width = logo.kind === 'svg' ? logo.width : logo.image.width();
+    const height = logo.kind === 'svg' ? logo.height : logo.image.height();
+    const scale = Math.min(
+      layout.logoWidth / width,
+      layout.logoHeight / height,
     );
-    canvas.restore();
+    const drawWidth = width * scale;
+    const drawHeight = height * scale;
+    const left = x + (layout.logoWidth - drawWidth) / 2;
+    const top = cy - drawHeight / 2;
+    if (logo.kind === 'svg') {
+      // drawn at its own size, then scaled as vectors into the box
+      canvas.save();
+      canvas.translate(left, top);
+      canvas.scale(scale, scale);
+      canvas.drawSvg(logo.svg, width, height);
+      canvas.restore();
+    } else {
+      canvas.drawImageRect(
+        logo.image,
+        Skia.XYWHRect(0, 0, width, height),
+        Skia.XYWHRect(left, top, drawWidth, drawHeight),
+        paints.image,
+      );
+    }
   } else if (built.initial) {
     built.initial.paint(
       canvas,
-      x + (layout.tileWidth - built.initial.getLongestLine()) / 2,
+      x + (layout.logoWidth - built.initial.getLongestLine()) / 2,
       cy - built.initial.getHeight() / 2,
     );
   }
@@ -444,16 +459,9 @@ const drawItem = (
       Skia.XYWHRect(0, y, screenWidth, height),
       paints.headerBackground,
     );
-    canvas.drawRect(
-      Skia.XYWHRect(0, y + height - 0.5, screenWidth, 0.5),
-      paints.border,
-    );
+    const textTop = y + layout.labelPadTop;
     if (built.title) {
-      built.title.paint(
-        canvas,
-        layout.pad,
-        y + (height - built.title.getHeight()) / 2,
-      );
+      built.title.paint(canvas, layout.pad, textTop);
     }
     if (model.showFilter) {
       // three shrinking lines, the shop's filter glyph
@@ -462,7 +470,8 @@ const drawItem = (
         : paints.filterIdle;
       const glyph = screenHeight * 0.02;
       const gx = screenWidth - layout.pad - glyph;
-      const gy = y + height / 2 - glyph / 2 + screenHeight * 0.001;
+      const gy =
+        textTop + layout.labelTextHeight / 2 - glyph / 2 + screenHeight * 0.001;
       const rows: [number, number][] = [
         [0, 1],
         [0.5, 0.62],
@@ -482,7 +491,7 @@ const drawItem = (
         built.accessory.paint(
           canvas,
           gx - screenWidth * 0.02 - built.accessory.getLongestLine(),
-          y + (height - built.accessory.getHeight()) / 2,
+          textTop,
         );
       }
     }
@@ -513,25 +522,19 @@ const drawItem = (
   }
 
   if (model.kind === 'skeleton') {
-    canvas.drawRect(
-      Skia.XYWHRect(0, y, screenWidth, height),
-      paints.rowBackground,
-    );
-    canvas.drawRect(
-      Skia.XYWHRect(0, y + height - 1, screenWidth, 1),
-      paints.border,
-    );
-    const cy = y + height / 2;
+    const skeletonTop = y + layout.cardGap / 2;
+    drawCard(canvas, context!, skeletonTop);
+    const cy = skeletonTop + layout.cellHeight / 2;
     canvas.drawRRect(
       Skia.RRectXY(
         Skia.XYWHRect(
-          layout.pad,
-          cy - layout.tileHeight / 2,
-          layout.tileWidth,
-          layout.tileHeight,
+          layout.logoLeft,
+          cy - layout.logoHeight / 2,
+          layout.logoWidth,
+          layout.logoHeight,
         ),
-        layout.tileRadius,
-        layout.tileRadius,
+        layout.logoRadius,
+        layout.logoRadius,
       ),
       paints.skeleton,
     );
@@ -566,28 +569,22 @@ const drawItem = (
   }
 
   // brand / giftcard / pending
-  canvas.drawRect(
-    Skia.XYWHRect(0, y, screenWidth, height),
-    paints.rowBackground,
-  );
-  canvas.drawRect(
-    Skia.XYWHRect(0, y + height - 1, screenWidth, 1),
-    paints.border,
-  );
+  const cardTop = y + layout.cardGap / 2;
+  const card = drawCard(canvas, context!, cardTop);
 
-  const cellCy = y + layout.cellHeight / 2;
+  const cellCy = cardTop + layout.cellHeight / 2;
   const cellPadV = layout.cellPadV;
-  drawLogoTile(canvas, model, built, context!, layout.pad, cellCy);
+  drawLogo(canvas, model, built, context!, layout.logoLeft, cellCy);
 
   if (model.kind === 'brand') {
     if (built.title) {
-      built.title.paint(canvas, layout.textLeft, y + cellPadV);
+      built.title.paint(canvas, layout.textLeft, cardTop + cellPadV);
     }
     if (built.detail) {
       built.detail.paint(
         canvas,
         layout.textLeft,
-        y + layout.cellHeight - cellPadV - built.detail.getHeight(),
+        cardTop + layout.cellHeight - cellPadV - built.detail.getHeight(),
       );
     }
     if (built.discount) {
@@ -596,8 +593,11 @@ const drawItem = (
       // old svg badge sat in its container
       const badgeH = screenHeight * 0.032;
       const badgeW = built.discount.getLongestLine() + screenWidth * 0.055;
-      const badgeCx = layout.pad + badgeW / 2;
-      const badgeCy = cellCy - layout.tileHeight / 2 + screenHeight * 0.006;
+      const badgeCx = layout.logoLeft + badgeW / 2;
+      const badgeCy = Math.max(
+        cellCy - layout.logoHeight / 2 + screenHeight * 0.006,
+        cardTop + badgeH / 2 + screenHeight * 0.004,
+      );
       canvas.save();
       canvas.translate(badgeCx, badgeCy);
       canvas.rotate(DISCOUNT_BADGE_TILT, 0, 0);
@@ -622,12 +622,10 @@ const drawItem = (
         (model.heart === 2 ? icons.heartActive : icons.heartInactive) ?? null;
       if (heart) {
         const size = layout.heartSize;
-        // flush with the right edge, like the gift cards' amount column
-        const cx = screenWidth - layout.pad - size / 2;
         canvas.drawImageRect(
           heart,
           Skia.XYWHRect(0, 0, heart.width(), heart.height()),
-          Skia.XYWHRect(cx - size / 2, cellCy - size / 2, size, size),
+          Skia.XYWHRect(layout.heartLeft, cellCy - size / 2, size, size),
           paints.image,
         );
       }
@@ -637,20 +635,20 @@ const drawItem = (
 
   // giftcard / pending shared cell: name, date, amount right
   if (built.title) {
-    built.title.paint(canvas, layout.textLeft, y + cellPadV);
+    built.title.paint(canvas, layout.textLeft, cardTop + cellPadV);
   }
   if (built.detail) {
     built.detail.paint(
       canvas,
       layout.textLeft,
-      y + layout.cellHeight - cellPadV - built.detail.getHeight(),
+      cardTop + layout.cellHeight - cellPadV - built.detail.getHeight(),
     );
   }
   if (built.amount) {
     built.amount.paint(
       canvas,
       screenWidth - layout.pad - built.amount.getLongestLine(),
-      y + cellPadV,
+      cardTop + cellPadV,
     );
   }
 
@@ -658,7 +656,7 @@ const drawItem = (
     const pillH = screenHeight * 0.024;
     const pillW = built.status.getLongestLine() + screenWidth * 0.035;
     const pillX = screenWidth - layout.pad - pillW;
-    const pillY = y + layout.cellHeight - cellPadV - pillH;
+    const pillY = cardTop + layout.cellHeight - cellPadV - pillH;
     canvas.drawRRect(
       Skia.RRectXY(
         Skia.XYWHRect(pillX, pillY, pillW, pillH),
@@ -675,7 +673,7 @@ const drawItem = (
   }
 
   if (model.kind === 'giftcard' && model.faded) {
-    canvas.drawRect(Skia.XYWHRect(0, y, screenWidth, height), paints.fade);
+    canvas.drawRRect(card, paints.fade);
   }
 };
 

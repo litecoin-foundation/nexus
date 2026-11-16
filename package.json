@@ -21,6 +21,7 @@
     "generate-protos": "@bufbuild/buf generate",
     "pods": "cd ios && RCT_NEW_ARCH_ENABLED=1 RCT_HERMES_V1_ENABLED=1 pod install",
     "storybook-generate": "sb-rn-get-stories",
+    "brand-icons": "node scripts/generate-brand-icons.js",
     "prepare": "husky",
     "test": "jest",
     "test-buy-sell": "jest src/components/Cards/Sell.test.tsx",

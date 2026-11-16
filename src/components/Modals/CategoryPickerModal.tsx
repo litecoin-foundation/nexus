@@ -38,10 +38,7 @@ import type {SkImage} from '@shopify/react-native-skia';
 
 import {glassModalShader, makeGlassModalFilter} from './glassModalShader';
 import TranslateText from '../TranslateText';
-import {
-  getShopListTop,
-  SHOP_LABEL_HEIGHT_RATIO,
-} from '../GiftCardShop/GlassShopRows';
+import {getShopListTop, getShopRowLayout} from '../GiftCardShop/GlassShopRows';
 import {ROW_BORDER, SHEET_BACKGROUND} from '../GlassTxRows';
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -91,11 +88,14 @@ function LiquidGlassCategoryPicker({
 
   // dropped from the filter control at the end of the list's label row
   const panelWidth = SCREEN_WIDTH * 0.58;
-  const panelRight = SCREEN_WIDTH * 0.05;
+  const panelRight = SCREEN_WIDTH * 0.06;
   const panelLeft = SCREEN_WIDTH - panelRight - panelWidth;
+  // gap between the bottom of the label row and the top of the panel
+  const panelGap = SCREEN_HEIGHT * 0.014;
   const panelTop =
     getShopListTop(SCREEN_WIDTH, SCREEN_HEIGHT, insets.top) +
-    SCREEN_HEIGHT * (SHOP_LABEL_HEIGHT_RATIO + 0.006);
+    getShopRowLayout(SCREEN_WIDTH, SCREEN_HEIGHT).labelHeight +
+    panelGap;
   const panelHeight = Math.min(
     SCREEN_HEIGHT * 0.5,
     SCREEN_HEIGHT - panelTop - SCREEN_HEIGHT * 0.2,

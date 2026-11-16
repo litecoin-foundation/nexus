@@ -29,6 +29,7 @@ import {
   useShopRowModels,
 } from './GlassShopRows';
 import {ShopLogoImages, useShopLogoImages} from './shopLogoImages';
+import {shopLogoKey} from './brandIcons';
 import {getTabBarBandHeight} from '../glassTabBarLayout';
 import {
   clearSessionToken,
@@ -343,14 +344,21 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
     [wishlistBrands],
   );
 
-  const logoUrls = useMemo(() => {
-    const urls = new Set<string>();
-    brands?.forEach(b => b.logo_url && urls.add(b.logo_url));
-    ownedGiftCards.forEach(gc => gc.logo_url && urls.add(gc.logo_url));
-    pendingGiftCards.forEach(gc => gc.logo_url && urls.add(gc.logo_url));
-    return Array.from(urls);
+  // the same keys the rows carry, so bundled icons replace remote logos
+  const logoKeys = useMemo(() => {
+    const keys = new Set<string>();
+    const add = (slug: string | undefined, url: string | undefined) => {
+      const key = shopLogoKey(slug, url);
+      if (key) {
+        keys.add(key);
+      }
+    };
+    brands?.forEach(b => add(b.slug, b.logo_url));
+    ownedGiftCards.forEach(gc => add(gc.brand, gc.logo_url));
+    pendingGiftCards.forEach(gc => add(gc.brand, gc.logo_url));
+    return Array.from(keys);
   }, [brands, ownedGiftCards, pendingGiftCards]);
-  const logos = useShopLogoImages(logoUrls);
+  const logos = useShopLogoImages(logoKeys);
 
   const bottomClearance =
     getTabBarBandHeight(SCREEN_HEIGHT, insets.bottom) + SCREEN_HEIGHT * 0.02;

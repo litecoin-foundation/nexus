@@ -9,6 +9,7 @@ import {
   isExpired,
 } from '../../services/giftcards';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {shopLogoKey} from './brandIcons';
 import {SEGMENTED_PILLS_HEIGHT_RATIO} from '../ButtonsV2/SegmentedPills';
 import {GLASS_HEADER_PILL_HEIGHT_RATIO} from '../glassSearchLayout';
 import {getHeaderRowHeight} from '../useHeaderHeight';
@@ -58,8 +59,8 @@ export const getShopListTop = getShopHeaderHeight;
 export const getShopSearchBlock = (screenHeight: number) =>
   screenHeight * (SHOP_HEADER_GAP_RATIO + SHOP_HEADER_SEARCH_HEIGHT_RATIO);
 
-export const SHOP_LABEL_HEIGHT_RATIO = 0.042;
 export const SHOP_CELL_HEIGHT_RATIO = 0.09;
+export const SHOP_CARD_GAP_RATIO = 0.01;
 export const SHOP_MESSAGE_HEIGHT_RATIO = 0.2;
 
 export type ShopRowKind =
@@ -178,7 +179,8 @@ const priceRange = (brand: Brand): string => {
 };
 
 export const useShopRowModels = (input: ShopRowsInput): ShopRowModels => {
-  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const {t} = useTranslation('nexusShop');
 
   const {
@@ -195,8 +197,9 @@ export const useShopRowModels = (input: ShopRowsInput): ShopRowModels => {
   } = input;
 
   return useMemo(() => {
-    const labelHeight = SCREEN_HEIGHT * SHOP_LABEL_HEIGHT_RATIO;
-    const cellHeight = SCREEN_HEIGHT * SHOP_CELL_HEIGHT_RATIO;
+    const {labelHeight} = getShopRowLayout(SCREEN_WIDTH, SCREEN_HEIGHT);
+    const cardRowHeight =
+      SCREEN_HEIGHT * (SHOP_CELL_HEIGHT_RATIO + SHOP_CARD_GAP_RATIO);
     const messageHeight = SCREEN_HEIGHT * SHOP_MESSAGE_HEIGHT_RATIO;
 
     const models: ShopRowModel[] = [];
@@ -227,16 +230,16 @@ export const useShopRowModels = (input: ShopRowsInput): ShopRowModels => {
 
     const skeletons = (count: number) => {
       for (let i = 0; i < count; i++) {
-        push(emptyRow('skeleton', y, cellHeight));
+        push(emptyRow('skeleton', y, cardRowHeight));
       }
     };
 
     const brandRow = (brand: Brand, heartVisible: boolean) => {
-      const row = emptyRow('brand', y, cellHeight);
+      const row = emptyRow('brand', y, cardRowHeight);
       row.id = brand.slug;
       row.title = brand.name;
       row.detail = priceRange(brand);
-      row.logoKey = brand.logo_url ?? '';
+      row.logoKey = shopLogoKey(brand.slug, brand.logo_url);
       row.initial = brand.name.charAt(0).toUpperCase();
       row.discount = brand.saleDiscount
         ? `-${formatDiscount(brand.saleDiscount)}%`
@@ -297,12 +300,12 @@ export const useShopRowModels = (input: ShopRowsInput): ShopRowModels => {
         if (activePending.length > 0) {
           label(t('pending_gif_cards'));
           for (const gc of activePending) {
-            const row = emptyRow('pending', y, cellHeight);
+            const row = emptyRow('pending', y, cardRowHeight);
             row.id = gc.id;
             row.title = gc.brand;
             row.detail = formatShopDate(gc.createdAt);
             row.amount = `${formatCurrency(gc.currency)}${gc.amount}`;
-            row.logoKey = gc.logo_url ?? '';
+            row.logoKey = shopLogoKey(gc.brand, gc.logo_url);
             row.initial = gc.brand.charAt(0).toUpperCase();
             row.status = t(
               gc.status === 'payment_received'
@@ -320,12 +323,12 @@ export const useShopRowModels = (input: ShopRowsInput): ShopRowModels => {
         } else {
           label(t('my_cards'));
           const cardRow = (gc: GiftCard, faded: boolean) => {
-            const row = emptyRow('giftcard', y, cellHeight);
+            const row = emptyRow('giftcard', y, cardRowHeight);
             row.id = gc.id;
             row.title = gc.brand;
             row.detail = formatShopDate(gc.purchasedAt);
             row.amount = `${formatCurrency(gc.faceValue.currency)}${gc.faceValue.amount}`;
-            row.logoKey = gc.logo_url ?? '';
+            row.logoKey = shopLogoKey(gc.brand, gc.logo_url);
             row.initial = gc.brand.charAt(0).toUpperCase();
             row.faded = faded;
             push(row);
@@ -342,6 +345,7 @@ export const useShopRowModels = (input: ShopRowsInput): ShopRowModels => {
     const rowBottoms = models.map(m => m.top + m.height);
     return {models, rowTops, rowBottoms};
   }, [
+    SCREEN_WIDTH,
     SCREEN_HEIGHT,
     t,
     section,
@@ -360,22 +364,46 @@ export const useShopRowModels = (input: ShopRowsInput): ShopRowModels => {
 // shared row layout, used by the draw worklets and the JS hit-testing
 export const getShopRowLayout = (screenWidth: number, screenHeight: number) => {
   'worklet';
-  const pad = screenWidth * 0.05;
-  const tileWidth = screenWidth * 0.17;
-  const tileHeight = screenHeight * 0.06;
+  const cardInset = screenWidth * 0.04;
+  const pad = cardInset + screenHeight * 0.015;
   const cellHeight = screenHeight * SHOP_CELL_HEIGHT_RATIO;
+  const logoWidth = screenWidth * 0.2;
+  const logoHeight = screenHeight * 0.07;
+  const logoPadLeft = screenWidth * 0.015;
+  const logoPadRight = screenWidth * 0.02;
+  const logoLeft = cardInset + logoPadLeft;
+  const textLeft = logoLeft + logoWidth + logoPadRight;
+  const columnGap = screenWidth * 0.035;
+  const contentRight = screenWidth - pad;
+  const heartSize = screenHeight * 0.02;
+  const heartPad = screenWidth * 0.05;
+  const heartLeft = screenWidth - cardInset - heartPad - heartSize;
+  const labelFontSize = screenHeight * 0.014;
+  const labelLineHeight = 1.3;
+  const labelPadTop = screenHeight * 0.012;
+  const labelPadBottom = screenHeight * 0.012;
+  const labelTextHeight = labelFontSize * labelLineHeight;
   return {
+    labelFontSize,
+    labelLineHeight,
+    labelPadTop,
+    labelTextHeight,
+    labelHeight: labelPadTop + labelTextHeight + labelPadBottom,
     pad,
-    tileWidth,
-    tileHeight,
-    tileRadius: screenHeight * 0.012,
+    cardInset,
+    cardGap: screenHeight * SHOP_CARD_GAP_RATIO,
+    cardRadius: screenHeight * 0.015,
+    logoLeft,
+    logoWidth,
+    logoHeight,
+    logoRadius: screenHeight * 0.012,
     cellHeight,
-    textLeft: pad + tileWidth + screenWidth * 0.035,
-    // right-side columns cap the title/detail paragraphs
-    titleMaxWidth: screenWidth * 0.42,
-    brandTitleMaxWidth: screenWidth * 0.6,
+    textLeft,
+    titleMaxWidth: contentRight - screenWidth * 0.27 - textLeft,
+    brandTitleMaxWidth: heartLeft - columnGap - textLeft,
     cellPadV: screenHeight * 0.018,
-    heartSize: screenHeight * 0.02,
+    heartSize,
+    heartLeft,
     messageCtaWidth: screenWidth * 0.4,
     messageCtaHeight: screenHeight * 0.05,
   };
@@ -400,6 +428,23 @@ export const shopRowHitTarget = (
   screenHeight: number,
 ): ShopRowAction => {
   const layout = getShopRowLayout(screenWidth, screenHeight);
+
+  // the gaps around a card belong to no card
+  if (
+    model.kind === 'brand' ||
+    model.kind === 'giftcard' ||
+    model.kind === 'pending'
+  ) {
+    const cardTop = layout.cardGap / 2;
+    if (
+      x < layout.cardInset ||
+      x > screenWidth - layout.cardInset ||
+      yLocal < cardTop ||
+      yLocal > cardTop + layout.cellHeight
+    ) {
+      return {type: 'none'};
+    }
+  }
 
   switch (model.kind) {
     case 'label':

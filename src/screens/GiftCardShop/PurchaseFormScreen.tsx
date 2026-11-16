@@ -43,7 +43,9 @@ import BlueButtonV2 from '../../components/ButtonsV2/BlueButtonV2';
 import {GAP_RATIO} from '../../components/ButtonsV2/fixedBottomStyle';
 import TOSCheckModal from '../../components/Modals/TOSCheckModal';
 
+import {SvgXml} from 'react-native-svg';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
+import {bundledBrandIcon} from '../../components/GiftCardShop/brandIcons';
 import TranslateText from '../../components/TranslateText';
 import ScreenHeader, {
   useScreenHeaderArrival,
@@ -270,18 +272,28 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
 
   const errorTextValue = error && error !== 'Unauthorized' ? error : undefined;
 
+  const bundledLogo = bundledBrandIcon(brand.slug);
+  const logoSvg = bundledLogo?.kind === 'svg' ? bundledLogo.markup : undefined;
+  const logoSource =
+    bundledLogo?.kind === 'image'
+      ? bundledLogo.module
+      : brand.logo_url
+        ? {uri: brand.logo_url}
+        : undefined;
+  const hasLogo = logoSvg !== undefined || logoSource !== undefined;
+
   return (
     <View style={styles.container}>
       <View style={styles.blueHeader}>
         <View style={styles.headerCard}>
           <View
             style={
-              brand.logo_url
-                ? styles.logoContainer
-                : styles.logoContainerPlaceholder
+              hasLogo ? styles.logoContainer : styles.logoContainerPlaceholder
             }>
-            {brand.logo_url ? (
-              <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
+            {logoSvg !== undefined ? (
+              <SvgXml xml={logoSvg} width="100%" height="100%" />
+            ) : logoSource !== undefined ? (
+              <Image source={logoSource} style={styles.brandLogo} />
             ) : (
               <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
                 <TranslateText

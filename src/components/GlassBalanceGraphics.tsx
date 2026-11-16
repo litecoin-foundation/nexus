@@ -10,6 +10,7 @@ import {
 } from '@shopify/react-native-skia';
 import type {
   SkParagraph,
+  SkTextStyle,
   SkTypeface,
   SkTypefaceFontProvider,
   TextAlign,
@@ -85,6 +86,7 @@ interface ParagraphOpts {
   align?: TextAlign;
   maxLines?: number;
   ellipsis?: string;
+  lineHeight?: number;
 }
 
 // single line by default, pass opts to override ({} = unlimited wrap)
@@ -99,16 +101,21 @@ export const buildParagraph = (
   opts: ParagraphOpts = {maxLines: 1},
 ): SkParagraph => {
   'worklet';
+  const style: SkTextStyle = {
+    fontFamilies: [FONT_FAMILY],
+    fontSize,
+    fontStyle: {weight},
+    color: Skia.Color(color),
+  };
+  if (opts.lineHeight !== undefined) {
+    style.heightMultiplier = opts.lineHeight;
+    style.halfLeading = true;
+  }
   const paragraph = Skia.ParagraphBuilder.Make(
     {textAlign: opts.align, maxLines: opts.maxLines, ellipsis: opts.ellipsis},
     fontMgr,
   )
-    .pushStyle({
-      fontFamilies: [FONT_FAMILY],
-      fontSize,
-      fontStyle: {weight},
-      color: Skia.Color(color),
-    })
+    .pushStyle(style)
     .addText(text)
     .build();
   paragraph.layout(measureWidth);
