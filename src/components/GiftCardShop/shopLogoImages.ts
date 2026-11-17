@@ -3,7 +3,7 @@ import {Image as RNImage} from 'react-native';
 import {Skia} from '@shopify/react-native-skia';
 import type {SkImage, SkSVG} from '@shopify/react-native-skia';
 
-import {bundledIconForKey} from './brandIcons';
+import {bundledIconForKey, svgViewBoxSize} from './brandIcons';
 
 // brand logos are remote URIs or our own bundled icons, keyed by shopLogoKey;
 // decode each once for the app's life and hand the skia list a stable record
@@ -35,9 +35,6 @@ const flushSoon = () => {
   }, 150);
 };
 
-const VIEW_BOX =
-  /<svg\b[^>]*\sviewBox\s*=\s*["']\s*[-+\d.eE]+[\s,]+[-+\d.eE]+[\s,]+([-+\d.eE]+)[\s,]+([-+\d.eE]+)/i;
-
 const svgLogo = (markup: string): ShopLogo | null => {
   const svg = Skia.SVG.MakeFromString(markup);
   if (!svg) {
@@ -47,9 +44,9 @@ const svgLogo = (markup: string): ShopLogo | null => {
   let height = svg.height();
   if (!(width > 0 && height > 0)) {
     // percentage sizes carry no intrinsic size; the viewBox has the shape
-    const box = VIEW_BOX.exec(markup);
-    width = box ? Number(box[1]) : 0;
-    height = box ? Number(box[2]) : 0;
+    const box = svgViewBoxSize(markup);
+    width = box?.width ?? 0;
+    height = box?.height ?? 0;
   }
   return width > 0 && height > 0 ? {kind: 'svg', svg, width, height} : null;
 };

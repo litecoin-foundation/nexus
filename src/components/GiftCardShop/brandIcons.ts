@@ -12,6 +12,19 @@ export type BundledBrandIcon =
 
 const BUNDLED_PREFIX = 'bundled:';
 
+const VIEW_BOX =
+  /<svg\b[^>]*\sviewBox\s*=\s*["']\s*[-+\d.eE]+[\s,]+[-+\d.eE]+[\s,]+([-+\d.eE]+)[\s,]+([-+\d.eE]+)/i;
+
+// an svg's viewBox width and height: the shape it keeps when scaled to fit
+export const svgViewBoxSize = (
+  markup: string,
+): {width: number; height: number} | undefined => {
+  const box = VIEW_BOX.exec(markup);
+  const width = box ? Number(box[1]) : 0;
+  const height = box ? Number(box[2]) : 0;
+  return width > 0 && height > 0 ? {width, height} : undefined;
+};
+
 // own-property lookups: a slug such as "constructor" must not hit the prototype
 const has = (record: object, key: string) =>
   Object.prototype.hasOwnProperty.call(record, key);

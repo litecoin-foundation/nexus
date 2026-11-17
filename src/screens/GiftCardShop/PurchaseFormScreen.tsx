@@ -45,7 +45,10 @@ import TOSCheckModal from '../../components/Modals/TOSCheckModal';
 
 import {SvgXml} from 'react-native-svg';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
-import {bundledBrandIcon} from '../../components/GiftCardShop/brandIcons';
+import {
+  bundledBrandIcon,
+  svgViewBoxSize,
+} from '../../components/GiftCardShop/brandIcons';
 import TranslateText from '../../components/TranslateText';
 import ScreenHeader, {
   useScreenHeaderArrival,
@@ -98,6 +101,50 @@ const AnimatedPressable: React.FC<{
   );
 };
 
+// NOTE: the logo's width / height, so its box can hug it; square until a remote
+// logo's size arrives (or when it can't be read)
+const useLogoAspectRatio = (
+  logoSvg: string | undefined,
+  logoModule: number | undefined,
+  logoUri: string | undefined,
+): number => {
+  const bundledRatio = useMemo(() => {
+    if (logoSvg !== undefined) {
+      const box = svgViewBoxSize(logoSvg);
+      return box ? box.width / box.height : 1;
+    }
+    if (logoModule !== undefined) {
+      const asset = Image.resolveAssetSource(logoModule);
+      return asset && asset.width > 0 && asset.height > 0
+        ? asset.width / asset.height
+        : 1;
+    }
+    return undefined;
+  }, [logoSvg, logoModule]);
+
+  const [remoteRatio, setRemoteRatio] = useState(1);
+  useEffect(() => {
+    if (bundledRatio !== undefined || !logoUri) {
+      return;
+    }
+    let cancelled = false;
+    Image.getSize(
+      logoUri,
+      (width, height) => {
+        if (!cancelled && width > 0 && height > 0) {
+          setRemoteRatio(width / height);
+        }
+      },
+      () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [bundledRatio, logoUri]);
+
+  return bundledRatio ?? remoteRatio;
+};
+
 const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
   brand,
   initialAmount,
@@ -119,7 +166,27 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
     useContext(ScreenSizeContext);
   const {headerHeight, rects, paddingHorizontal} = useScreenHeaderLayout();
   const headerFadeStyle = useScreenHeaderArrival();
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, headerHeight);
+
+  const bundledLogo = bundledBrandIcon(brand.slug);
+  const logoSvg = bundledLogo?.kind === 'svg' ? bundledLogo.markup : undefined;
+  const logoModule =
+    bundledLogo?.kind === 'image' ? bundledLogo.module : undefined;
+  const logoUri = bundledLogo ? undefined : brand.logo_url || undefined;
+  const logoSource =
+    logoModule !== undefined
+      ? logoModule
+      : logoUri !== undefined
+        ? {uri: logoUri}
+        : undefined;
+  const hasLogo = logoSvg !== undefined || logoSource !== undefined;
+  const logoAspectRatio = useLogoAspectRatio(logoSvg, logoModule, logoUri);
+
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    headerHeight,
+    logoAspectRatio,
+  );
 
   const [amountText, setAmountText] = useState(
     amount > 0 ? amount.toString() : '',
@@ -271,16 +338,6 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
   };
 
   const errorTextValue = error && error !== 'Unauthorized' ? error : undefined;
-
-  const bundledLogo = bundledBrandIcon(brand.slug);
-  const logoSvg = bundledLogo?.kind === 'svg' ? bundledLogo.markup : undefined;
-  const logoSource =
-    bundledLogo?.kind === 'image'
-      ? bundledLogo.module
-      : brand.logo_url
-        ? {uri: brand.logo_url}
-        : undefined;
-  const hasLogo = logoSvg !== undefined || logoSource !== undefined;
 
   return (
     <View style={styles.container}>
@@ -626,8 +683,16 @@ const getStyles = (
   screenWidth: number,
   screenHeight: number,
   headerHeight: number,
-) =>
-  StyleSheet.create({
+  logoAspectRatio: number,
+) => {
+  const logoBoxHeight = screenWidth * 0.22;
+  const logoPadding = screenHeight * 0.01;
+  const logoBoxWidth = Math.min(
+    (logoBoxHeight - logoPadding * 2) * logoAspectRatio,
+    screenWidth * 0.4,
+  );
+
+  return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#f7f7f7',
@@ -653,8 +718,8 @@ const getStyles = (
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: colors.white,
-      borderRadius: getBorderRadius(screenHeight).lg,
-      paddingHorizontal: screenHeight * 0.01,
+      borderRadius: screenHeight * 0.02,
+      paddingHorizontal: screenHeight * 0.015,
       shadowColor: colors.black,
       shadowOffset: {width: 0, height: 2},
       shadowOpacity: 0.08,
@@ -662,12 +727,13 @@ const getStyles = (
       elevation: 3,
     },
     logoContainer: {
-      width: screenWidth * 0.3,
-      height: screenWidth * 0.2,
+      width: logoBoxWidth,
+      height: logoBoxHeight,
       borderRadius: screenHeight * 0.012,
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
+      paddingVertical: logoPadding,
     },
     logoContainerPlaceholder: {
       width: screenWidth * 0.24,
@@ -698,7 +764,7 @@ const getStyles = (
     },
     brandInfo: {
       flex: 1,
-      marginLeft: getSpacing(screenWidth, screenHeight).md,
+      marginLeft: screenHeight * 0.02,
     },
     brandName: {
       fontSize: getFontSize(screenHeight).md,
@@ -842,5 +908,6 @@ const getStyles = (
       paddingVertical: 10,
     },
   });
+};
 
 export default PurchaseFormScreen;
